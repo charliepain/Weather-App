@@ -6,6 +6,40 @@
   margin: 0;
 }
 
-h1 {
-    color: red;
+.page-heading {
+  width: fit-content;
+  margin: 8px auto;
+}
+
+.weather-context-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.weather-context {
+  display: flex;
+  gap: 4px;
+  background-color: lightgreen;
+  width: fit-content;
+  padding: 8px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.get-error {
+  color: red;
+}
+
+#location {
+  width: clamp(10em, 20vw, 20em);
+}
+
+.weather-info-container {
+  background-color: aqua;
+  text-align: center;
+  margin: 16px auto;
+  border-radius: 20px;
+  width: clamp(20em, 30vw, 80em);
+  padding: 8px 4px;
 }

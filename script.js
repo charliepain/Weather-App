@@ -1,21 +1,81 @@
 async function getWeatherData(location) {
-    try {
-        const response = await fetch(
-            `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?key=XKG3RWDBXC4S88GBXU4QWHFBY&contentType=json`
-        );
-        const weatherData = await response.json();
-        return weatherData;
-    } catch (err) {
-        console.log(`Error getWeatherData("${location}")`);
-        throw err;
-    }
+
+    const response = await fetch(
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?key=XKG3RWDBXC4S88GBXU4QWHFBY&unitGroup=metric&contentType=json`
+    );
+    const weatherData = await response.json();
+    return weatherData;
 }
 
 function processWeatherData(weatherData) {
+    const address = weatherData.resolvedAddress;
     const currentWeather = weatherData.currentConditions;
-    const {datetime, temp, humidity, precip, snow, windspeed, conditions} = currentWeather;
-    return {datetime, temp, humidity, precip, snow, windspeed, conditions};
+    const { temp, humidity, precip, snow, windspeed, conditions } = currentWeather;
+    return { address, temp, humidity, precip, snow, windspeed, conditions };
 }
 
-const processedWeatherData = getWeatherData("London")
-    .then((weatherData) => console.log(processWeatherData(weatherData)));
+function createWeatherEntry(key, value, unit = null) {
+    const entry = document.createElement("p");
+    entry.textContent = unit === null ? `${key}: ${value}` :
+        `${key}: ${value} ${unit}`;
+    return entry;
+}
+
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+function displayWeatherInfo(processedWeatherData, tempIsCelsius) {
+    const weatherInfoContainer = document.querySelector(".weather-info-container");
+    removeAllChildNodes(weatherInfoContainer);
+
+    const tempUnit = tempIsCelsius ? "°C" : "°F";
+    const temp = tempIsCelsius ? processedWeatherData.temp : (processedWeatherData.temp * 1.8 + 32).toFixed(1);
+    weatherInfoContainer.appendChild(createWeatherEntry("Location", processedWeatherData.address));
+    weatherInfoContainer.appendChild(createWeatherEntry("Temperature", temp, tempUnit));
+    weatherInfoContainer.appendChild(createWeatherEntry("Conditions", processedWeatherData.conditions));
+    weatherInfoContainer.appendChild(createWeatherEntry("Humidity", processedWeatherData.humidity, "%"));
+    weatherInfoContainer.appendChild(createWeatherEntry("Precipitation", processedWeatherData.precip, "mm"));
+    weatherInfoContainer.appendChild(createWeatherEntry("Snow", processedWeatherData.snow, "cm"));
+    weatherInfoContainer.appendChild(createWeatherEntry("Wind speed", processedWeatherData.windspeed, "km/h"));
+}
+
+function displayGetWeatherError(location) {
+    const weatherContextContainer = document.querySelector(".weather-context-container");
+    const errorElem = document.createElement("p");
+    errorElem.classList.add("get-error");
+    errorElem.textContent = `Error when fetching weather from location "${location}"`;
+    weatherContextContainer.appendChild(errorElem);
+}
+
+function removeGetWeatherError() {
+    const weatherContextContainer = document.querySelector(".weather-context-container");
+    const errorElem = document.querySelector(".get-error");
+    if (errorElem)
+        weatherContextContainer.removeChild(errorElem);
+}
+
+async function getAndDisplayWeather(location) {
+    try {
+        const weatherData = await getWeatherData(location);
+        const processedWeatherData = processWeatherData(weatherData);
+        displayWeatherInfo(processedWeatherData, tempIsCelsius);
+    } catch (err) {
+        displayGetWeatherError(location);
+    }
+}
+
+const getWeatherButton = document.querySelector(".weather-context input[type='submit']");
+getWeatherButton.addEventListener("click", async (e) => {
+    e.preventDefault();
+    removeGetWeatherError();
+
+    const locationInput = document.querySelector("#location");
+    const location = locationInput.value;
+    await getAndDisplayWeather(location);
+});
+
+let tempIsCelsius = true;
+getAndDisplayWeather("Rome");
