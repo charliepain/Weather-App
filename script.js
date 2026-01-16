@@ -1,7 +1,7 @@
 async function getWeatherData(location) {
 
     const response = await fetch(
-        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?key=XKG3RWDBXC4S88GBXU4QWHFBY&unitGroup=metric&contentType=json`
+        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?unitGroup=metric&include=current&key=XKG3RWDBXC4S88GBXU4QWHFBY&contentType=json`
     );
     const weatherData = await response.json();
     return weatherData;
@@ -10,13 +10,14 @@ async function getWeatherData(location) {
 function processWeatherData(weatherData) {
     const address = weatherData.resolvedAddress;
     const currentWeather = weatherData.currentConditions;
-    const { temp, humidity, precip, snow, windspeed, conditions } = currentWeather;
-    return { address, temp, humidity, precip, snow, windspeed, conditions };
+    const { temp, humidity, precip, snow, windspeed, conditions, icon } = currentWeather;
+    return { address, temp, humidity, precip, snow, windspeed, conditions, icon };
 }
 
 function createWeatherEntry(key, value, unit = null) {
     const entry = document.createElement("p");
-    entry.textContent = unit === null ? `${key}: ${value}` :
+    entry.textContent = value === null? `${key}: Unknown` : 
+        unit === null ? `${key}: ${value}` :
         `${key}: ${value} ${unit}`;
     return entry;
 }
@@ -34,6 +35,10 @@ function displayWeatherInfo(processedWeatherData, tempIsCelsius) {
     const tempUnit = tempIsCelsius ? "°C" : "°F";
     const temp = tempIsCelsius ? processedWeatherData.temp : (processedWeatherData.temp * 1.8 + 32).toFixed(1);
     weatherInfoContainer.appendChild(createWeatherEntry("Location", processedWeatherData.address));
+    const weatherIcon = document.createElement("img");
+    weatherIcon.classList.add("weather-icon");
+    weatherIcon.src = `./icons/${processedWeatherData.icon}.svg`;
+    weatherInfoContainer.appendChild(weatherIcon);
     weatherInfoContainer.appendChild(createWeatherEntry("Temperature", temp, tempUnit));
     weatherInfoContainer.appendChild(createWeatherEntry("Conditions", processedWeatherData.conditions));
     weatherInfoContainer.appendChild(createWeatherEntry("Humidity", processedWeatherData.humidity, "%"));
@@ -68,13 +73,13 @@ async function getAndDisplayWeather(location) {
 }
 
 const getWeatherButton = document.querySelector(".weather-context input[type='submit']");
-getWeatherButton.addEventListener("click", async (e) => {
+getWeatherButton.addEventListener("click", (e) => {
     e.preventDefault();
     removeGetWeatherError();
 
     const locationInput = document.querySelector("#location");
     const location = locationInput.value;
-    await getAndDisplayWeather(location);
+    getAndDisplayWeather(location);
 });
 
 let tempIsCelsius = true;

@@ -4,6 +4,11 @@
 
 * {
   margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: aliceblue;
 }
 
 .page-heading {
@@ -32,7 +37,7 @@
 }
 
 #location {
-  width: clamp(10em, 20vw, 20em);
+  width: clamp(16em, 20vw, 32em);
 }
 
 .weather-info-container {
@@ -41,5 +46,10 @@
   margin: 16px auto;
   border-radius: 20px;
   width: clamp(20em, 30vw, 80em);
-  padding: 8px 4px;
+  padding: 16px 8px;
+}
+
+.weather-icon {
+  width: 30%;
+  padding: 16px 0;
 }
